@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include<stdio.h>
 
 int removeElement(int nums[], int size, int val) {
     int k = 0;   
