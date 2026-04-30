@@ -1,52 +1,64 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <limits.h>
 
-// Structure to store position and time
-typedef struct {
-    int position;
-    double time;
-} Car;
+// Check if allocation is possible
+int isPossible(int arr[], int n, int m, int maxPages) {
+    int students = 1;
+    int pagesSum = 0;
 
-// Comparator for sorting in descending order of position
-int compare(const void *a, const void *b) {
-    Car *car1 = (Car *)a;
-    Car *car2 = (Car *)b;
-    return car2->position - car1->position;
-}
-
-int carFleet(int target, int position[], int speed[], int n) {
-    Car cars[n];
-
-    // Step 1: Calculate time for each car
     for (int i = 0; i < n; i++) {
-        cars[i].position = position[i];
-        cars[i].time = (double)(target - position[i]) / speed[i];
-    }
+        if (arr[i] > maxPages)
+            return 0;
 
-    // Step 2: Sort cars by position (descending)
-    qsort(cars, n, sizeof(Car), compare);
+        if (pagesSum + arr[i] > maxPages) {
+            students++;
+            pagesSum = arr[i];
 
-    int fleets = 0;
-    double maxTime = 0;
-
-    // Step 3: Traverse and count fleets
-    for (int i = 0; i < n; i++) {
-        if (cars[i].time > maxTime) {
-            fleets++;
-            maxTime = cars[i].time;
+            if (students > m)
+                return 0;
+        } else {
+            pagesSum += arr[i];
         }
     }
 
-    return fleets;
+    return 1;
+}
+
+int allocatePages(int arr[], int n, int m) {
+    if (m > n) return -1;
+
+    int sum = 0, maxVal = 0;
+
+    for (int i = 0; i < n; i++) {
+        sum += arr[i];
+        if (arr[i] > maxVal)
+            maxVal = arr[i];
+    }
+
+    int low = maxVal;
+    int high = sum;
+    int result = INT_MAX;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+
+        if (isPossible(arr, n, m, mid)) {
+            result = mid;
+            high = mid - 1; // try smaller value
+        } else {
+            low = mid + 1;
+        }
+    }
+
+    return result;
 }
 
 // Driver code
 int main() {
-    int target = 12;
-    int position[] = {10, 8, 0, 5, 3};
-    int speed[] = {2, 4, 1, 1, 3};
-    int n = 5;
+    int arr[] = {12, 34, 67, 90};
+    int n = 4;
+    int m = 2;
 
-    printf("Number of Car Fleets: %d\n", carFleet(target, position, speed, n));
+    printf("Minimum pages = %d\n", allocatePages(arr, n, m));
     return 0;
 }
