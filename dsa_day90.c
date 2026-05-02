@@ -1,60 +1,61 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-long long merge(int arr[], int temp[], int left, int mid, int right) {
-    int i = left;     // left subarray
-    int j = mid + 1;  // right subarray
-    int k = left;
-    long long inv_count = 0;
+// Function to check if boards can be painted with given maxTime
+int isPossible(int arr[], int n, int k, int maxTime) {
+    int painters = 1;
+    int currentTime = 0;
 
-    while (i <= mid && j <= right) {
-        if (arr[i] <= arr[j]) {
-            temp[k++] = arr[i++];
+    for (int i = 0; i < n; i++) {
+        if (arr[i] > maxTime)
+            return 0;
+
+        if (currentTime + arr[i] <= maxTime) {
+            currentTime += arr[i];
         } else {
-            temp[k++] = arr[j++];
-            inv_count += (mid - i + 1); // count inversions
+            painters++;
+            currentTime = arr[i];
+
+            if (painters > k)
+                return 0;
+        }
+    }
+    return 1;
+}
+
+// Main function to find minimum time
+int painterPartition(int arr[], int n, int k) {
+    int low = arr[0], high = 0;
+
+    // Find max and sum
+    for (int i = 0; i < n; i++) {
+        if (arr[i] > low)
+            low = arr[i];
+        high += arr[i];
+    }
+
+    int result = high;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+
+        if (isPossible(arr, n, k, mid)) {
+            result = mid;
+            high = mid - 1;  // try smaller time
+        } else {
+            low = mid + 1;   // increase time
         }
     }
 
-    while (i <= mid)
-        temp[k++] = arr[i++];
-
-    while (j <= right)
-        temp[k++] = arr[j++];
-
-    for (int x = left; x <= right; x++)
-        arr[x] = temp[x];
-
-    return inv_count;
-}
-
-long long mergeSort(int arr[], int temp[], int left, int right) {
-    long long inv_count = 0;
-
-    if (left < right) {
-        int mid = (left + right) / 2;
-
-        inv_count += mergeSort(arr, temp, left, mid);
-        inv_count += mergeSort(arr, temp, mid + 1, right);
-        inv_count += merge(arr, temp, left, mid, right);
-    }
-
-    return inv_count;
-}
-
-long long countInversions(int arr[], int n) {
-    int *temp = (int *)malloc(n * sizeof(int));
-    long long result = mergeSort(arr, temp, 0, n - 1);
-    free(temp);
     return result;
 }
 
 // Driver code
 int main() {
-    int arr[] = {2, 4, 1, 3, 5};
+    int arr[] = {10, 20, 30, 40};
     int n = sizeof(arr) / sizeof(arr[0]);
+    int k = 2;
 
-    printf("Number of inversions: %lld\n", countInversions(arr, n));
+    printf("Minimum time to paint boards = %d\n", painterPartition(arr, n, k));
+
     return 0;
 }
-
